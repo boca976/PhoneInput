@@ -3,15 +3,16 @@ package com.example.recon1.phoneinput;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,15 +36,22 @@ public class MainActivity extends AppCompatActivity {
         verifyBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 //                PhoneNumberUtils phoneUtil;
-                String phnNum = PhoneNumberUtils.formatNumberToE164(phoneInput.getText().toString(),countryID);
+//                String phnNum = PhoneNumberUtils.formatNumber(phoneInput.getText().toString());
+                PhoneNumberUtil pnu = PhoneNumberUtil.getInstance();
+                try {
+                    Phonenumber.PhoneNumber pn = pnu.parse(phoneInput.getText().toString(), GetCountryID());
+                    if  (!pnu.isValidNumber(pn)) {
 
-                if (phnNum == null) {
-                    Toast toast = Toast.makeText(getApplicationContext(), "Please type a valid phone number", Toast.LENGTH_LONG);
-                    toast.show();
+                        Toast toast = Toast.makeText(getApplicationContext(), "Please type a valid phone number", Toast.LENGTH_LONG);
+                        toast.show();
 
-                }else {
-                    Toast toast = Toast.makeText(getApplicationContext() ,phnNum ,Toast.LENGTH_LONG);
-                    toast.show();
+                    }else {
+                        String phnNum = pnu.format(pn, PhoneNumberUtil.PhoneNumberFormat.E164);
+                        Toast toast = Toast.makeText(getApplicationContext() ,phnNum ,Toast.LENGTH_LONG);
+                        toast.show();
+                    }
+                } catch (NumberParseException e) {
+                    e.printStackTrace();
                 }
             }
         });
